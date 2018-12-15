@@ -1,0 +1,109 @@
+{
+    "model_params": {
+        "model": "FCDenseNet103",
+        "in_channels": 3,
+        "down_blocks": [5,5,5,5,5],
+        "up_blocks": [5,5,5,5,5],
+        "bottleneck_layers": 5,
+        "growth_rate": 16,
+        "out_chans_first_conv": 48,
+        "n_classes": 2
+    },
+    "criterion_params": {
+        "criterion": "CrossEntropyLoss",
+        "weights_path": "../data/segmentation/weights.json"
+    },
+    "optimizer_params": {
+        "optimizer": "RMSprop",
+        "momentum": 0.9,
+        "lr": 0.001,
+        "weight_decay": 0.0001
+    },
+    "scheduler_params": {
+        "scheduler": "ExponentialLR",
+        "gamma": 0.995
+    },
+    "data_params": {
+        "dataset_name": "RandomCropDataset",
+        "common": {
+            "images_folder": ".",
+            "masks_folder": ".",
+            "mask_column": "mask_path",
+            "image_column": "img_path",
+            "h_size": 224,
+            "w_size": 224
+        },
+        "n_workers": 0,
+        "train_params": {
+            "labels": "../data/segmentation/rnd_crops/train.csv",
+            "rnd_crop": true,
+            "crop_range": [200, 600],
+            "transform": [{
+                "name": "Resize",
+                "params": {
+                    "height": 224,
+                    "width": 224
+                }
+            },  {
+                "name": "ShiftScaleRotate",
+                "params": {
+                    "rotate_limit": 90,
+                    "shift_limit": [0, 0.2],
+                    "scale_limit": 0,
+                    "interpolation": 1,
+                    "p": 0.5
+                }
+            },  {
+                "name": "HorizontalFlip",
+                "params": null
+            },  {
+                "name": "VerticalFlip",
+                "params": null
+            },  {
+                "name": "ToTensor",
+                "params": {
+                    "normalize": {
+                        "mean": [0.322, 0.339, 0.301],
+                        "std": [0.133, 0.133, 0.114]
+                    }
+                }
+            }
+        ]
+        },
+        "valid_params": {
+            "labels": "../data/segmentation/rnd_crops/valid.csv",
+            "rnd_crop": false,
+            "crop_range": null,
+            "transform": [{
+                "name": "Resize",
+                "params": {
+                    "height": 224,
+                    "width": 224
+                }
+            },  {
+                "name": "ToTensor",
+                "params": {
+                    "normalize": {
+                        "mean": [0.322, 0.339, 0.301],
+                        "std": [0.133, 0.133, 0.114]
+                    }
+                }
+            }]
+        }
+    },
+    "metrics": [
+        {
+            "name": "SegmentationConfusionMeter",
+            "params": null
+        },
+        {
+            "name": "MeanIntersectionOverIUnionMeter",
+            "params": null
+        }
+    ],
+    "training_params": {
+        "batch_size": 20,
+        "epochs": 50
+    },
+    "logdir": "../log1"
+}
